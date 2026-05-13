@@ -1,5 +1,5 @@
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+ocal RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
@@ -11,34 +11,37 @@ local RUNNING = true
 _G.ESP_ENABLED = false
 _G.AIM_ENABLED = false
 _G.AVATAR_ENABLED = false
-_G.AUTO_COIN = false 
+_G.AUTO_COIN = false
+_G.TELEPORT_OPEN = false
 
 -- Auto Coin Settings
-_G.SPEED = 25 -- ตั้งค่าแนะนำที่ 25
+_G.SPEED = 25
 _G.HEIGHT = 3
 _G.COLLECT_DISTANCE = 5
 _G.DETECTION_RANGE = 100
 
 local RoleColors = {
-    Murderer = Color3.fromRGB(255, 0, 0),    
-    Sheriff = Color3.fromRGB(0, 200, 255),   
-    Innocent = Color3.fromRGB(0, 255, 50)    
+    Murderer = Color3.fromRGB(255, 0, 0),
+    Sheriff  = Color3.fromRGB(0, 200, 255),
+    Innocent = Color3.fromRGB(0, 255, 50)
 }
 
 local function tween(obj, props, time)
     TweenService:Create(obj, TweenInfo.new(time or 0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), props):Play()
 end
 
--- [ Create GUI ] --
+-- ============================================================
+-- [ Create Main GUI ] --
+-- ============================================================
 local gui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 gui.Name = "Starfish_NoBorder_Fixed"
 
 local Main = Instance.new("Frame", gui)
-Main.Size = UDim2.new(0, 220, 0, 260) -- ปรับความสูงลดลง
-Main.Position = UDim2.new(0, 15, 0.5, -130)
+Main.Size = UDim2.new(0, 220, 0, 290)
+Main.Position = UDim2.new(0, 15, 0.5, -145)
 Main.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 Main.Active = true
-Main.BorderSizePixel = 0 
+Main.BorderSizePixel = 0
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
 
 -- Sidebar Toggle
@@ -71,7 +74,7 @@ local Scroll = Instance.new("ScrollingFrame", Main)
 Scroll.Size = UDim2.new(1, 0, 1, -95)
 Scroll.Position = UDim2.new(0, 0, 0, 55)
 Scroll.BackgroundTransparency = 1
-Scroll.CanvasSize = UDim2.new(0, 0, 0, 520) 
+Scroll.CanvasSize = UDim2.new(0, 0, 0, 580)
 Scroll.ScrollBarThickness = 2
 Scroll.ScrollBarImageColor3 = Color3.fromRGB(255, 127, 80)
 
@@ -93,14 +96,14 @@ local function createToggle(name, default, callback, order)
     Btn.LayoutOrder = order
     Btn.BorderSizePixel = 0
     Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
-    
+
     local Sw = Instance.new("Frame", Btn)
     Sw.Size = UDim2.new(0, 32, 0, 16)
     Sw.Position = UDim2.new(1, -42, 0.5, -8)
     Sw.BackgroundColor3 = default and Color3.fromRGB(255, 127, 80) or Color3.fromRGB(50, 50, 60)
     Sw.BorderSizePixel = 0
     Instance.new("UICorner", Sw).CornerRadius = UDim.new(1, 0)
-    
+
     local state = default
     Btn.MouseButton1Click:Connect(function()
         state = not state
@@ -116,7 +119,7 @@ local function createSlider(name, min, max, default, callback, order)
     Frame.LayoutOrder = order
     Frame.BorderSizePixel = 0
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-    
+
     local Label = Instance.new("TextLabel", Frame)
     Label.Size = UDim2.new(1, -20, 0, 20)
     Label.Position = UDim2.new(0, 10, 0, 5)
@@ -139,7 +142,7 @@ local function createSlider(name, min, max, default, callback, order)
     Fill.BackgroundColor3 = Color3.fromRGB(255, 127, 80)
     Fill.BorderSizePixel = 0
     Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
-    
+
     local Btn = Instance.new("TextButton", SliderBg)
     Btn.Size = UDim2.new(1, 0, 1, 20)
     Btn.Position = UDim2.new(0, 0, 0.5, -10)
@@ -162,11 +165,9 @@ local function createSlider(name, min, max, default, callback, order)
             dragging = true; inputObj = input; Scroll.ScrollingEnabled = false
         end
     end)
-    
     UIS.InputEnded:Connect(function(input)
         if input == inputObj then dragging = false; inputObj = nil; Scroll.ScrollingEnabled = true end
     end)
-    
     RunService.RenderStepped:Connect(function()
         if dragging and inputObj then update(inputObj.Position.X) end
     end)
@@ -179,7 +180,7 @@ local function createColorSelector(roleName, order)
     Frame.LayoutOrder = order
     Frame.BorderSizePixel = 0
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-    
+
     local Label = Instance.new("TextLabel", Frame)
     Label.Size = UDim2.new(1, -40, 0, 20)
     Label.Position = UDim2.new(0, 10, 0, 5)
@@ -210,7 +211,7 @@ local function createColorSelector(roleName, order)
     end
 end
 
--- [ Setup UI ] --
+-- [ Setup Toggles ] --
 createToggle("ESP Highlight", _G.ESP_ENABLED, function(s) _G.ESP_ENABLED = s end, 1)
 createToggle("HARDCORE AIMBOT", _G.AIM_ENABLED, function(s) _G.AIM_ENABLED = s end, 2)
 createToggle("Show Avatar Icon", _G.AVATAR_ENABLED, function(s) _G.AVATAR_ENABLED = s end, 3)
@@ -219,6 +220,13 @@ createSlider("ความเร็วเก็บเหรียญ", 16, 100, 
 createColorSelector("Murderer", 6)
 createColorSelector("Sheriff", 7)
 createColorSelector("Innocent", 8)
+
+-- [ Teleport Toggle Button ] --
+createToggle("⚡ Teleport ไปหาผู้เล่น", false, function(s)
+    _G.TELEPORT_OPEN = s
+    TeleportFrame.Visible = s
+    if s then updatePlayerList() end
+end, 9)
 
 -- Uninject
 local Exit = Instance.new("TextButton", Main)
@@ -231,9 +239,263 @@ Exit.Font = Enum.Font.GothamBold
 Exit.TextSize = 11
 Exit.BorderSizePixel = 0
 Instance.new("UICorner", Exit).CornerRadius = UDim.new(0, 8)
-Exit.MouseButton1Click:Connect(function() RUNNING = false; gui:Destroy() end)
+Exit.MouseButton1Click:Connect(function()
+    RUNNING = false
+    gui:Destroy()
+end)
 
+-- ============================================================
+-- [ Teleport Panel ] --
+-- ============================================================
+TeleportFrame = Instance.new("Frame", gui)
+TeleportFrame.Name = "TeleportFrame"
+TeleportFrame.Size = UDim2.new(0, 280, 0, 380)
+TeleportFrame.Position = UDim2.new(0, 250, 0.5, -190)
+TeleportFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 20)
+TeleportFrame.BorderSizePixel = 0
+TeleportFrame.Visible = false
+
+local TeleportCornerMain = Instance.new("UICorner", TeleportFrame)
+TeleportCornerMain.CornerRadius = UDim.new(0, 12)
+
+local TeleportStroke = Instance.new("UIStroke", TeleportFrame)
+TeleportStroke.Color = Color3.fromRGB(80, 180, 255)
+TeleportStroke.Thickness = 1.5
+TeleportStroke.Transparency = 0.3
+
+-- Teleport Header
+local TeleportHeader = Instance.new("Frame", TeleportFrame)
+TeleportHeader.Size = UDim2.new(1, 0, 0, 50)
+TeleportHeader.BackgroundColor3 = Color3.fromRGB(20, 20, 35)
+TeleportHeader.BorderSizePixel = 0
+
+local THCorner = Instance.new("UICorner", TeleportHeader)
+THCorner.CornerRadius = UDim.new(0, 12)
+
+local THFix = Instance.new("Frame", TeleportHeader)
+THFix.Size = UDim2.new(1, 0, 0, 12)
+THFix.Position = UDim2.new(0, 0, 1, -12)
+THFix.BackgroundColor3 = Color3.fromRGB(20, 20, 35)
+THFix.BorderSizePixel = 0
+
+local TeleportTitle = Instance.new("TextLabel", TeleportHeader)
+TeleportTitle.Size = UDim2.new(1, -50, 1, 0)
+TeleportTitle.Position = UDim2.new(0, 15, 0, 0)
+TeleportTitle.BackgroundTransparency = 1
+TeleportTitle.Text = "⚡ TELEPORT"
+TeleportTitle.TextColor3 = Color3.fromRGB(80, 200, 255)
+TeleportTitle.TextSize = 18
+TeleportTitle.Font = Enum.Font.GothamBold
+TeleportTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+local TeleportCloseBtn = Instance.new("TextButton", TeleportHeader)
+TeleportCloseBtn.Size = UDim2.new(0, 32, 0, 32)
+TeleportCloseBtn.Position = UDim2.new(1, -42, 0.5, -16)
+TeleportCloseBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+TeleportCloseBtn.Text = "✕"
+TeleportCloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+TeleportCloseBtn.TextSize = 14
+TeleportCloseBtn.Font = Enum.Font.GothamBold
+TeleportCloseBtn.BorderSizePixel = 0
+Instance.new("UICorner", TeleportCloseBtn).CornerRadius = UDim.new(0, 8)
+
+-- Status Label
+local StatusLabel = Instance.new("TextLabel", TeleportFrame)
+StatusLabel.Size = UDim2.new(1, -20, 0, 30)
+StatusLabel.Position = UDim2.new(0, 10, 0, 58)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "เลือกผู้เล่นที่ต้องการ Teleport ไปหา"
+StatusLabel.TextColor3 = Color3.fromRGB(150, 150, 180)
+StatusLabel.TextSize = 12
+StatusLabel.Font = Enum.Font.Gotham
+StatusLabel.TextWrapped = true
+
+-- Scroll Frame สำหรับรายชื่อผู้เล่น
+local ScrollFrame = Instance.new("ScrollingFrame", TeleportFrame)
+ScrollFrame.Size = UDim2.new(1, -20, 0, 220)
+ScrollFrame.Position = UDim2.new(0, 10, 0, 95)
+ScrollFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 16)
+ScrollFrame.BorderSizePixel = 0
+ScrollFrame.ScrollBarThickness = 4
+ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 180, 255)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+Instance.new("UICorner", ScrollFrame).CornerRadius = UDim.new(0, 8)
+
+local PlayerListLayout = Instance.new("UIListLayout", ScrollFrame)
+PlayerListLayout.Padding = UDim.new(0, 6)
+
+local PlayerListPadding = Instance.new("UIPadding", ScrollFrame)
+PlayerListPadding.PaddingTop = UDim.new(0, 6)
+PlayerListPadding.PaddingLeft = UDim.new(0, 6)
+PlayerListPadding.PaddingRight = UDim.new(0, 6)
+
+-- Teleport Action Button
+local TeleportBtn = Instance.new("TextButton", TeleportFrame)
+TeleportBtn.Size = UDim2.new(1, -20, 0, 45)
+TeleportBtn.Position = UDim2.new(0, 10, 0, 325)
+TeleportBtn.BackgroundColor3 = Color3.fromRGB(30, 120, 220)
+TeleportBtn.Text = "🚀  TELEPORT ไปหาผู้เล่น"
+TeleportBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+TeleportBtn.TextSize = 14
+TeleportBtn.Font = Enum.Font.GothamBold
+TeleportBtn.BorderSizePixel = 0
+TeleportBtn.AutoButtonColor = false
+Instance.new("UICorner", TeleportBtn).CornerRadius = UDim.new(0, 10)
+
+-- ====== Teleport ตัวแปร ======
+local selectedPlayer = nil
+local playerButtons = {}
+
+-- ====== Teleport ฟังก์ชัน ======
+function updatePlayerList()
+    for _, btn in pairs(playerButtons) do btn:Destroy() end
+    playerButtons = {}
+    local ySize = 0
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local Btn = Instance.new("TextButton", ScrollFrame)
+            Btn.Size = UDim2.new(1, -12, 0, 44)
+            Btn.BackgroundColor3 = Color3.fromRGB(20, 25, 40)
+            Btn.Text = ""
+            Btn.BorderSizePixel = 0
+            Btn.AutoButtonColor = false
+
+            Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
+
+            local Icon = Instance.new("TextLabel", Btn)
+            Icon.Size = UDim2.new(0, 34, 0, 34)
+            Icon.Position = UDim2.new(0, 5, 0.5, -17)
+            Icon.BackgroundColor3 = Color3.fromRGB(30, 60, 100)
+            Icon.Text = string.upper(string.sub(player.Name, 1, 1))
+            Icon.TextColor3 = Color3.fromRGB(80, 200, 255)
+            Icon.TextSize = 16
+            Icon.Font = Enum.Font.GothamBold
+            Icon.BorderSizePixel = 0
+            Instance.new("UICorner", Icon).CornerRadius = UDim.new(0, 17)
+
+            local NameLabel = Instance.new("TextLabel", Btn)
+            NameLabel.Size = UDim2.new(1, -55, 0, 22)
+            NameLabel.Position = UDim2.new(0, 48, 0, 7)
+            NameLabel.BackgroundTransparency = 1
+            NameLabel.Text = player.Name
+            NameLabel.TextColor3 = Color3.fromRGB(220, 220, 255)
+            NameLabel.TextSize = 13
+            NameLabel.Font = Enum.Font.GothamBold
+            NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+            local DisplayLabel = Instance.new("TextLabel", Btn)
+            DisplayLabel.Size = UDim2.new(1, -55, 0, 16)
+            DisplayLabel.Position = UDim2.new(0, 48, 0, 25)
+            DisplayLabel.BackgroundTransparency = 1
+            DisplayLabel.Text = player.DisplayName
+            DisplayLabel.TextColor3 = Color3.fromRGB(100, 130, 180)
+            DisplayLabel.TextSize = 11
+            DisplayLabel.Font = Enum.Font.Gotham
+            DisplayLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+            local SelIndicator = Instance.new("Frame", Btn)
+            SelIndicator.Size = UDim2.new(0, 3, 0.6, 0)
+            SelIndicator.Position = UDim2.new(1, -8, 0.2, 0)
+            SelIndicator.BackgroundColor3 = Color3.fromRGB(80, 200, 255)
+            SelIndicator.BorderSizePixel = 0
+            SelIndicator.Visible = false
+            Instance.new("UICorner", SelIndicator).CornerRadius = UDim.new(1, 0)
+
+            local thisPlayer = player
+            Btn.MouseButton1Click:Connect(function()
+                for _, b in pairs(playerButtons) do
+                    b.BackgroundColor3 = Color3.fromRGB(20, 25, 40)
+                    local ind = b:FindFirstChildWhichIsA("Frame")
+                    if ind then ind.Visible = false end
+                end
+                selectedPlayer = thisPlayer
+                Btn.BackgroundColor3 = Color3.fromRGB(20, 50, 90)
+                SelIndicator.Visible = true
+                StatusLabel.Text = "✅ เลือก: " .. thisPlayer.Name
+                StatusLabel.TextColor3 = Color3.fromRGB(80, 220, 120)
+            end)
+
+            Btn.MouseEnter:Connect(function()
+                if selectedPlayer ~= thisPlayer then
+                    tween(Btn, {BackgroundColor3 = Color3.fromRGB(25, 35, 55)}, 0.15)
+                end
+            end)
+            Btn.MouseLeave:Connect(function()
+                if selectedPlayer ~= thisPlayer then
+                    tween(Btn, {BackgroundColor3 = Color3.fromRGB(20, 25, 40)}, 0.15)
+                end
+            end)
+
+            table.insert(playerButtons, Btn)
+            ySize = ySize + 50
+        end
+    end
+    ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ySize)
+end
+
+-- ====== Teleport Action ======
+TeleportBtn.MouseButton1Click:Connect(function()
+    if not selectedPlayer then
+        StatusLabel.Text = "⚠️ กรุณาเลือกผู้เล่นก่อน!"
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 160, 60)
+        return
+    end
+    local targetChar = selectedPlayer.Character
+    if not targetChar then
+        StatusLabel.Text = "❌ ผู้เล่นยังไม่มี Character"
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+        return
+    end
+    local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
+    if not targetRoot then
+        StatusLabel.Text = "❌ ไม่พบตำแหน่งผู้เล่น"
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+        return
+    end
+    local myChar = LocalPlayer.Character
+    if not myChar then return end
+    local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return end
+
+    local offset = targetRoot.CFrame.LookVector * 5
+    local newCFrame = CFrame.new(targetRoot.Position + offset) * CFrame.Angles(0, math.pi, 0)
+    myRoot.CFrame = newCFrame
+
+    StatusLabel.Text = "🚀 Teleport สำเร็จ! ไปหา " .. selectedPlayer.Name
+    StatusLabel.TextColor3 = Color3.fromRGB(80, 255, 160)
+    tween(TeleportBtn, {BackgroundColor3 = Color3.fromRGB(40, 200, 100)}, 0.1)
+    task.wait(0.3)
+    tween(TeleportBtn, {BackgroundColor3 = Color3.fromRGB(30, 120, 220)}, 0.2)
+end)
+
+TeleportBtn.MouseEnter:Connect(function()
+    tween(TeleportBtn, {BackgroundColor3 = Color3.fromRGB(50, 150, 255)}, 0.15)
+end)
+TeleportBtn.MouseLeave:Connect(function()
+    tween(TeleportBtn, {BackgroundColor3 = Color3.fromRGB(30, 120, 220)}, 0.15)
+end)
+
+TeleportCloseBtn.MouseButton1Click:Connect(function()
+    TeleportFrame.Visible = false
+    _G.TELEPORT_OPEN = false
+end)
+
+Players.PlayerAdded:Connect(function()
+    if TeleportFrame.Visible then updatePlayerList() end
+end)
+Players.PlayerRemoving:Connect(function(player)
+    if selectedPlayer == player then
+        selectedPlayer = nil
+        StatusLabel.Text = "⚠️ ผู้เล่นที่เลือกออกจากเซิร์ฟแล้ว"
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 160, 60)
+    end
+    if TeleportFrame.Visible then updatePlayerList() end
+end)
+
+-- ============================================================
 -- [ Logic Functions ] --
+-- ============================================================
 local function getRole(p)
     if not p or not p.Character then return "Innocent" end
     local char = p.Character; local backpack = p:FindFirstChild("Backpack")
@@ -245,89 +507,4 @@ local function getRole(p)
 end
 
 local function getClosestCoin(hrp)
-    local closest, dist = nil, math.huge
-    for _, v in pairs(workspace:GetDescendants()) do
-        if v:IsA("BasePart") and (v.Name:find("Coin") or v:FindFirstChild("CoinVisual")) then
-            if v.Transparency < 1 then
-                local d = (hrp.Position - v.Position).Magnitude
-                if d < dist and d < _G.DETECTION_RANGE then dist = d; closest = v end
-            end
-        end
-    end
-    return closest
-end
-
-local bv, bg
-local function handleAutoCoin(myChar, myHrp)
-    if not _G.AUTO_COIN then
-        if bv then bv:Destroy(); bv = nil end
-        if bg then bg:Destroy(); bg = nil end
-        return
-    end
-    if not bv then bv = Instance.new("BodyVelocity", myHrp); bv.MaxForce = Vector3.new(1e6, 1e6, 1e6); bv.Velocity = Vector3.zero end
-    if not bg then bg = Instance.new("BodyGyro", myHrp); bg.MaxTorque = Vector3.new(1e6, 1e6, 1e6); bg.P = 10000 end
-    for _, v in pairs(myChar:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
-    local coin = getClosestCoin(myHrp)
-    if coin then
-        local target = coin.Position + Vector3.new(0, _G.HEIGHT, 0)
-        local direction = (target - myHrp.Position)
-        if (myHrp.Position - coin.Position).Magnitude > _G.COLLECT_DISTANCE then
-            bv.Velocity = direction.Unit * _G.SPEED
-            bg.CFrame = CFrame.new(myHrp.Position, coin.Position)
-        else
-            bv.Velocity = Vector3.new(0,0,0)
-            myHrp.CFrame = myHrp.CFrame:Lerp(CFrame.new(coin.Position), 0.35)
-            firetouchinterest(myHrp, coin, 0); firetouchinterest(myHrp, coin, 1)
-        end
-    else bv.Velocity = Vector3.new(0,0,0) end
-end
-
--- [ Main Loop ] --
-RunService.RenderStepped:Connect(function()
-    if not RUNNING then return end
-    local myChar = LocalPlayer.Character
-    local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
-    local targetMurd = nil
-    for _, p in pairs(Players:GetPlayers()) do
-        pcall(function()
-            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                local char = p.Character; local role = getRole(p); local hl = char:FindFirstChild("SF_Visual")
-                if _G.ESP_ENABLED then
-                    if not hl then hl = Instance.new("Highlight", char); hl.Name = "SF_Visual" end
-                    hl.Enabled = true; hl.FillColor = RoleColors[role]; hl.OutlineColor = RoleColors[role]; hl.FillTransparency = 0.2
-                elseif hl then hl:Destroy() end
-                local head = char:FindFirstChild("Head")
-                if head then
-                    local icon = head:FindFirstChild("StarIcon")
-                    if _G.AVATAR_ENABLED then
-                        if not icon then
-                            icon = Instance.new("BillboardGui", head); icon.Name = "StarIcon"; icon.Size = UDim2.new(0, 35, 0, 35); icon.StudsOffset = Vector3.new(0, 3, 0); icon.AlwaysOnTop = true
-                            local img = Instance.new("ImageLabel", icon); img.Size = UDim2.new(1,0,1,0); img.BackgroundTransparency = 1; img.Image = "rbxthumb://type=AvatarHeadShot&id="..p.UserId.."&w=150&h=150"
-                            Instance.new("UICorner", img).CornerRadius = UDim.new(1,0); Instance.new("UIStroke", img).Thickness = 2
-                        end
-                        icon.ImageLabel.UIStroke.Color = RoleColors[role]
-                    elseif icon then icon:Destroy() end
-                end
-                if role == "Murderer" then targetMurd = char end
-            end
-        end)
-    end
-    if _G.AIM_ENABLED and targetMurd then
-        local tool = myChar and (myChar:FindFirstChild("Gun") or myChar:FindFirstChild("Revolver"))
-        if tool and targetMurd:FindFirstChild("HumanoidRootPart") then Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetMurd.HumanoidRootPart.Position) end
-    end
-    if myHrp then handleAutoCoin(myChar, myHrp) end
-end)
-
--- [ Drag Logic ] --
-local dToggle, dStart, sPos
-TopBar.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dToggle = true; dStart = i.Position; sPos = Main.Position end end)
-UIS.InputChanged:Connect(function(i) if dToggle and i.UserInputType == Enum.UserInputType.MouseMovement then local d = i.Position - dStart; Main.Position = UDim2.new(sPos.X.Scale, sPos.X.Offset + d.X, sPos.Y.Scale, sPos.Y.Offset + d.Y) end end)
-UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dToggle = false end end)
-
-local isCol = false
-SideTab.MouseButton1Click:Connect(function()
-    isCol = not isCol
-    tween(Main, {Position = isCol and UDim2.new(0, -225, Main.Position.Y.Scale, Main.Position.Y.Offset) or UDim2.new(0, 15, Main.Position.Y.Scale, Main.Position.Y.Offset)})
-    tween(SideTab, {Rotation = isCol and 180 or 0})
-end)
+    local cl
