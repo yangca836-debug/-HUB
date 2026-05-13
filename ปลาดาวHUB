@@ -72,34 +72,27 @@ List.HorizontalAlignment = Enum.HorizontalAlignment.Center
 List.Padding = UDim.new(0, 8)
 List.SortOrder = Enum.SortOrder.LayoutOrder
 
+-- [ Teleport Panel - Transparent & No Label ] --
 local TeleportFrame = Instance.new("Frame", gui)
-TeleportFrame.Size = UDim2.new(0, 180, 0, 250)
-TeleportFrame.Position = UDim2.new(0, 250, 0.5, -125)
+TeleportFrame.Size = UDim2.new(0, 160, 0, 220)
+TeleportFrame.Position = UDim2.new(0, 250, 0.5, -110)
 TeleportFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+TeleportFrame.BackgroundTransparency = 0.4 -- ทำให้โปร่งใส
 TeleportFrame.Visible = false
 TeleportFrame.BorderSizePixel = 0
 Instance.new("UICorner", TeleportFrame).CornerRadius = UDim.new(0, 10)
 
 local TPHeader = Instance.new("Frame", TeleportFrame)
-TPHeader.Size = UDim2.new(1, 0, 0, 30)
-TPHeader.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+TPHeader.Size = UDim2.new(1, 0, 0, 25)
+TPHeader.BackgroundTransparency = 1 -- หัวลากโปร่งใส
 TPHeader.BorderSizePixel = 0
-Instance.new("UICorner", TPHeader).CornerRadius = UDim.new(0, 10)
-
-local TPTitle = Instance.new("TextLabel", TPHeader)
-TPTitle.Size = UDim2.new(1, 0, 1, 0)
-TPTitle.Text = "เลือกชื่อเพื่อวาร์ป"
-TPTitle.TextColor3 = Color3.fromRGB(150, 150, 150)
-TPTitle.TextSize = 11
-TPTitle.Font = Enum.Font.GothamBold
-TPTitle.BackgroundTransparency = 1
 
 local TPScroll = Instance.new("ScrollingFrame", TeleportFrame)
-TPScroll.Size = UDim2.new(1, -10, 1, -40)
-TPScroll.Position = UDim2.new(0, 5, 0, 35)
+TPScroll.Size = UDim2.new(1, -10, 1, -30)
+TPScroll.Position = UDim2.new(0, 5, 0, 25)
 TPScroll.BackgroundTransparency = 1
 TPScroll.BorderSizePixel = 0
-TPScroll.ScrollBarThickness = 2
+TPScroll.ScrollBarThickness = 0 -- ซ่อนบาร์
 TPScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 local TPListLayout = Instance.new("UIListLayout", TPScroll)
@@ -111,13 +104,13 @@ function updatePlayerList()
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer then
             local b = Instance.new("TextButton", TPScroll)
-            b.Size = UDim2.new(1, -5, 0, 30)
-            b.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-            b.Text = " " .. p.DisplayName
-            b.TextColor3 = Color3.fromRGB(220, 220, 225)
+            b.Size = UDim2.new(1, -5, 0, 28)
+            b.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            b.BackgroundTransparency = 0.8 -- ปุ่มโปร่งใส
+            b.Text = p.DisplayName
+            b.TextColor3 = Color3.fromRGB(255, 255, 255)
             b.Font = Enum.Font.GothamSemibold
             b.TextSize = 10
-            b.TextXAlignment = Enum.TextXAlignment.Left
             b.BorderSizePixel = 0
             Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
             
@@ -126,16 +119,17 @@ function updatePlayerList()
                 local myHrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
                 if hrp and myHrp then
                     myHrp.CFrame = hrp.CFrame * CFrame.new(0, 0, 3)
-                    b.BackgroundColor3 = Color3.fromRGB(255, 127, 80)
+                    b.BackgroundTransparency = 0.5
                     task.wait(0.1)
-                    tween(b, {BackgroundColor3 = Color3.fromRGB(30, 30, 40)})
+                    b.BackgroundTransparency = 0.8
                 end
             end)
-            y = y + 35
+            y = y + 33
         end
     end
     TPScroll.CanvasSize = UDim2.new(0, 0, 0, y)
 end
+
 local function createToggle(name, default, callback, order)
     local Btn = Instance.new("TextButton", Scroll)
     Btn.Size = UDim2.new(1, -26, 0, 36)
@@ -217,7 +211,7 @@ createToggle("HARDCORE AIMBOT", _G.AIM_ENABLED, function(s) _G.AIM_ENABLED = s e
 createToggle("Show Avatar Icon", _G.AVATAR_ENABLED, function(s) _G.AVATAR_ENABLED = s end, 3)
 createToggle("Auto เก็บเหรียญ", _G.AUTO_COIN, function(s) _G.AUTO_COIN = s end, 4)
 createSlider("ความเร็วเก็บเหรียญ", 16, 100, _G.SPEED, function(v) _G.SPEED = v end, 5)
-createToggle("⚡ รายชื่อวาร์ป", false, function(s) 
+createToggle("⚡ วาร์ปรายชื่อ", false, function(s) 
     TeleportFrame.Visible = s 
     if s then updatePlayerList() end 
 end, 6)
@@ -315,8 +309,8 @@ local function makeDraggable(top, main)
     UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragToggle = false end end)
 end
 
-makeDraggable(TopBar, Main)
 makeDraggable(TPHeader, TeleportFrame)
+makeDraggable(TopBar, Main)
 
 local isCol = false
 SideTab.MouseButton1Click:Connect(function()
