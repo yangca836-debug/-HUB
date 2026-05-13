@@ -507,4 +507,96 @@ local function getRole(p)
 end
 
 local function getClosestCoin(hrp)
-    local cl
+    local closest, dist = nil, math.huge
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and (v.Name:find("Coin") or v:FindFirstChild("CoinVisual")) then
+            if v.Transparency < 1 then
+                local d = (hrp.Position - v.Position).Magnitude
+                if d < dist and d < _G.DETECTION_RANGE then dist = d; closest = v end
+            end
+        end
+    end
+    return closest
+end
+
+local bv, bg
+local function handleAutoCoin(myChar, myHrp)
+    if not _G.AUTO_COIN then
+        if bv then bv:Destroy(); bv = nil end
+        if bg then bg:Destroy(); bg = nil end
+        return
+    end
+    if not bv then bv = Instance.new("BodyVelocity", myHrp); bv.MaxForce = Vector3.new(1e6, 1e6, 1e6); bv.Velocity = Vector3.zero end
+    if not bg then bg = Instance.new("BodyGyro", myHrp); bg.MaxTorque = Vector3.new(1e6, 1e6, 1e6); bg.P = 10000 end
+    for _, v in pairs(myChar:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
+    local coin = getClosestCoin(myHrp)
+    if coin then
+        local target = coin.Position + Vector3.new(0, _G.HEIGHT, 0)
+        local direction = (target - myHrp.Position)
+        if (myHrp.Position - coin.Position).Magnitude > _G.COLLECT_DISTANCE then
+            bv.Velocity = direction.Unit * _G.SPEED
+            bg.CFrame = CFrame.new(myHrp.Position, coin.Position)
+        else
+            bv.Velocity = Vector3.new(0, 0, 0)
+            myHrp.CFrame = myHrp.CFrame:Lerp(CFrame.new(coin.Position), 0.35)
+            firetouchinterest(myHrp, coin, 0); firetouchinterest(myHrp, coin, 1)
+        end
+    else bv.Velocity = Vector3.new(0, 0, 0) end
+end
+
+-- [ Main Loop ] --
+RunService.RenderStepped:Connect(function()
+    if not RUNNING then return end
+    local myChar = LocalPlayer.Character
+    local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    local targetMurd = nil
+    for _, p in pairs(Players:GetPlayers()) do
+        pcall(function()
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local char = p.Character; local role = getRole(p); local hl = char:FindFirstChild("SF_Visual")
+                if _G.ESP_ENABLED then
+                    if not hl then hl = Instance.new("Highlight", char); hl.Name = "SF_Visual" end
+                    hl.Enabled = true; hl.FillColor = RoleColors[role]; hl.OutlineColor = RoleColors[role]; hl.FillTransparency = 0.2
+                elseif hl then hl:Destroy() end
+                local head = char:FindFirstChild("Head")
+                if head then
+                    local icon = head:FindFirstChild("StarIcon")
+                    if _G.AVATAR_ENABLED then
+                        if not icon then
+                            icon = Instance.new("BillboardGui", head); icon.Name = "StarIcon"; icon.Size = UDim2.new(0, 35, 0, 35); icon.StudsOffset = Vector3.new(0, 3, 0); icon.AlwaysOnTop = true
+                            local img = Instance.new("ImageLabel", icon); img.Size = UDim2.new(1, 0, 1, 0); img.BackgroundTransparency = 1; img.Image = "rbxthumb://type=AvatarHeadShot&id=" .. p.UserId .. "&w=150&h=150"
+                            Instance.new("UICorner", img).CornerRadius = UDim.new(1, 0); Instance.new("UIStroke", img).Thickness = 2
+                        end
+                        icon.ImageLabel.UIStroke.Color = RoleColors[role]
+                    elseif icon then icon:Destroy() end
+                end
+                if role == "Murderer" then targetMurd = char end
+            end
+        end)
+    end
+    if _G.AIM_ENABLED and targetMurd then
+        local tool = myChar and (myChar:FindFirstChild("Gun") or myChar:FindFirstChild("Revolver"))
+        if tool and targetMurd:FindFirstChild("HumanoidRootPart") then Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetMurd.HumanoidRootPart.Position) end
+    end
+    if myHrp then handleAutoCoin(myChar, myHrp) end
+end)
+
+-- [ Drag Logic (Main) ] --
+local dToggle, dStart, sPos
+TopBar.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dToggle = true; dStart = i.Position; sPos = Main.Position end end)
+UIS.InputChanged:Connect(function(i) if dToggle and i.UserInputType == Enum.UserInputType.MouseMovement then local d = i.Position - dStart; Main.Position = UDim2.new(sPos.X.Scale, sPos.X.Offset + d.X, sPos.Y.Scale, sPos.Y.Offset + d.Y) end end)
+UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dToggle = false end end)
+
+-- [ Drag Logic (Teleport Panel) ] --
+local tpDrag, tpStart, tpPos
+TeleportHeader.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then tpDrag = true; tpStart = i.Position; tpPos = TeleportFrame.Position end end)
+UIS.InputChanged:Connect(function(i) if tpDrag and i.UserInputType == Enum.UserInputType.MouseMovement then local d = i.Position - tpStart; TeleportFrame.Position = UDim2.new(tpPos.X.Scale, tpPos.X.Offset + d.X, tpPos.Y.Scale, tpPos.Y.Offset + d.Y) end end)
+UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then tpDrag = false end end)
+
+-- [ Sidebar Collapse ] --
+local isCol = false
+SideTab.MouseButton1Click:Connect(function()
+    isCol = not isCol
+    tween(Main, {Position = isCol and UDim2.new(0, -225, Main.Position.Y.Scale, Main.Position.Y.Offset) or UDim2.new(0, 15, Main.Position.Y.Scale, Main.Position.Y.Offset)})
+    tween(SideTab, {Rotation = isCol and 180 or 0})
+end)
