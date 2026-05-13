@@ -7,9 +7,9 @@ local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 local RUNNING = true
 
+-- [ Global Settings ] --
 _G.ESP_ENABLED = false
 _G.AIM_ENABLED = false
-_G.AVATAR_ENABLED = false
 _G.AUTO_COIN = false
 _G.SPEED = 25
 _G.HEIGHT = 3
@@ -17,100 +17,96 @@ _G.COLLECT_DISTANCE = 5
 _G.DETECTION_RANGE = 100
 
 local RoleColors = {
-    Murderer = Color3.fromRGB(255, 0, 0),
-    Sheriff  = Color3.fromRGB(0, 200, 255),
-    Innocent = Color3.fromRGB(0, 255, 50)
+    Murderer = Color3.fromRGB(255, 60, 60),
+    Sheriff  = Color3.fromRGB(60, 160, 255),
+    Innocent = Color3.fromRGB(80, 255, 120)
 }
 
 local function tween(obj, props, time)
-    TweenService:Create(obj, TweenInfo.new(time or 0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), props):Play()
+    TweenService:Create(obj, TweenInfo.new(time or 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), props):Play()
 end
 
+-- ============================================================
+-- [ Main UI Setup ] --
+-- ============================================================
 local gui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-gui.Name = "Starfish_Minimal_Fixed"
+gui.Name = "Starfish_Pro_v2"
 
 local Main = Instance.new("Frame", gui)
-Main.Size = UDim2.new(0, 220, 0, 290)
-Main.Position = UDim2.new(0, 15, 0.5, -145)
-Main.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+Main.Size = UDim2.new(0, 220, 0, 300)
+Main.Position = UDim2.new(0, 15, 0.5, -150)
+Main.BackgroundColor3 = Color3.fromRGB(12, 12, 15)
 Main.BorderSizePixel = 0
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
-
-local SideTab = Instance.new("TextButton", Main)
-SideTab.Size = UDim2.new(0, 26, 0, 60)
-SideTab.Position = UDim2.new(1, 4, 0.5, -30)
-SideTab.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-SideTab.Text = "★"
-SideTab.TextColor3 = Color3.fromRGB(255, 127, 80)
-SideTab.Font = Enum.Font.GothamBold
-SideTab.TextSize = 18
-SideTab.BorderSizePixel = 0
-Instance.new("UICorner", SideTab).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 
 local TopBar = Instance.new("Frame", Main)
-TopBar.Size = UDim2.new(1, 0, 0, 45)
+TopBar.Size = UDim2.new(1, 0, 0, 40)
 TopBar.BackgroundTransparency = 1
 
 local Title = Instance.new("TextLabel", TopBar)
 Title.Size = UDim2.new(1, 0, 1, 0)
-Title.Text = "ปลาดาวHUB"
-Title.TextColor3 = Color3.fromRGB(240, 240, 245)
+Title.Text = "STARFISH PRO"
+Title.TextColor3 = Color3.fromRGB(255, 127, 80)
 Title.Font = Enum.Font.GothamBlack
-Title.TextSize = 18
+Title.TextSize = 16
 Title.BackgroundTransparency = 1
 
 local Scroll = Instance.new("ScrollingFrame", Main)
-Scroll.Size = UDim2.new(1, 0, 1, -95)
-Scroll.Position = UDim2.new(0, 0, 0, 55)
+Scroll.Size = UDim2.new(1, -10, 1, -50)
+Scroll.Position = UDim2.new(0, 5, 0, 45)
 Scroll.BackgroundTransparency = 1
-Scroll.CanvasSize = UDim2.new(0, 0, 0, 450)
-Scroll.ScrollBarThickness = 2
-Scroll.ScrollBarImageColor3 = Color3.fromRGB(255, 127, 80)
+Scroll.CanvasSize = UDim2.new(0, 0, 0, 350)
+Scroll.ScrollBarThickness = 0
 
 local List = Instance.new("UIListLayout", Scroll)
+List.Padding = UDim.new(0, 6)
 List.HorizontalAlignment = Enum.HorizontalAlignment.Center
-List.Padding = UDim.new(0, 8)
-List.SortOrder = Enum.SortOrder.LayoutOrder
 
--- [ Teleport Panel - Transparent & No Label ] --
-local TeleportFrame = Instance.new("Frame", gui)
-TeleportFrame.Size = UDim2.new(0, 160, 0, 220)
-TeleportFrame.Position = UDim2.new(0, 250, 0.5, -110)
-TeleportFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-TeleportFrame.BackgroundTransparency = 0.4 -- ทำให้โปร่งใส
-TeleportFrame.Visible = false
-TeleportFrame.BorderSizePixel = 0
-Instance.new("UICorner", TeleportFrame).CornerRadius = UDim.new(0, 10)
+-- ============================================================
+-- [ PRO TELEPORT UI ] --
+-- ============================================================
+local TPFrame = Instance.new("Frame", gui)
+TPFrame.Size = UDim2.new(0, 180, 0, 250)
+TPFrame.Position = UDim2.new(0, 250, 0.5, -125)
+TPFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+TPFrame.BackgroundTransparency = 0.2
+TPFrame.Visible = false
+TPFrame.BorderSizePixel = 0
+Instance.new("UICorner", TPFrame).CornerRadius = UDim.new(0, 12)
 
-local TPHeader = Instance.new("Frame", TeleportFrame)
-TPHeader.Size = UDim2.new(1, 0, 0, 25)
-TPHeader.BackgroundTransparency = 1 -- หัวลากโปร่งใส
-TPHeader.BorderSizePixel = 0
+-- Glow/Stroke สำหรับความโปร
+local Stroke = Instance.new("UIStroke", TPFrame)
+Stroke.Color = Color3.fromRGB(255, 127, 80)
+Stroke.Thickness = 1.5
+Stroke.Transparency = 0.6
 
-local TPScroll = Instance.new("ScrollingFrame", TeleportFrame)
-TPScroll.Size = UDim2.new(1, -10, 1, -30)
-TPScroll.Position = UDim2.new(0, 5, 0, 25)
+local TPHeader = Instance.new("Frame", TPFrame)
+TPHeader.Size = UDim2.new(1, 0, 0, 30)
+TPHeader.BackgroundTransparency = 1
+
+local TPScroll = Instance.new("ScrollingFrame", TPFrame)
+TPScroll.Size = UDim2.new(1, -10, 1, -40)
+TPScroll.Position = UDim2.new(0, 5, 0, 35)
 TPScroll.BackgroundTransparency = 1
-TPScroll.BorderSizePixel = 0
-TPScroll.ScrollBarThickness = 0 -- ซ่อนบาร์
+TPScroll.ScrollBarThickness = 0
 TPScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-
-local TPListLayout = Instance.new("UIListLayout", TPScroll)
-TPListLayout.Padding = UDim.new(0, 5)
+Instance.new("UIListLayout", TPScroll).Padding = UDim.new(0, 4)
 
 function updatePlayerList()
     for _, v in pairs(TPScroll:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
-    local y = 0
+    local count = 0
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer then
+            count = count + 1
             local b = Instance.new("TextButton", TPScroll)
-            b.Size = UDim2.new(1, -5, 0, 28)
+            b.Size = UDim2.new(1, 0, 0, 32)
             b.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            b.BackgroundTransparency = 0.8 -- ปุ่มโปร่งใส
-            b.Text = p.DisplayName
-            b.TextColor3 = Color3.fromRGB(255, 255, 255)
-            b.Font = Enum.Font.GothamSemibold
-            b.TextSize = 10
+            b.BackgroundTransparency = 0.95
+            b.Text = "  " .. p.DisplayName
+            b.TextColor3 = Color3.fromRGB(200, 200, 205)
+            b.Font = Enum.Font.GothamMedium
+            b.TextSize = 11
+            b.TextXAlignment = Enum.TextXAlignment.Left
             b.BorderSizePixel = 0
             Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
             
@@ -119,66 +115,65 @@ function updatePlayerList()
                 local myHrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
                 if hrp and myHrp then
                     myHrp.CFrame = hrp.CFrame * CFrame.new(0, 0, 3)
-                    b.BackgroundTransparency = 0.5
+                    tween(b, {BackgroundTransparency = 0.7, TextColor3 = Color3.fromRGB(255, 127, 80)}, 0.1)
                     task.wait(0.1)
-                    b.BackgroundTransparency = 0.8
+                    tween(b, {BackgroundTransparency = 0.95, TextColor3 = Color3.fromRGB(200, 200, 205)}, 0.2)
                 end
             end)
-            y = y + 33
         end
     end
-    TPScroll.CanvasSize = UDim2.new(0, 0, 0, y)
+    TPScroll.CanvasSize = UDim2.new(0, 0, 0, count * 36)
 end
 
-local function createToggle(name, default, callback, order)
+-- ============================================================
+-- [ Standard Components ] --
+-- ============================================================
+local function createToggle(name, default, callback)
     local Btn = Instance.new("TextButton", Scroll)
-    Btn.Size = UDim2.new(1, -26, 0, 36)
-    Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    Btn.Size = UDim2.new(1, -10, 0, 38)
+    Btn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     Btn.Text = "  " .. name
-    Btn.TextColor3 = Color3.fromRGB(240, 240, 245)
+    Btn.TextColor3 = Color3.fromRGB(200, 200, 200)
     Btn.Font = Enum.Font.GothamSemibold
     Btn.TextSize = 11
     Btn.TextXAlignment = Enum.TextXAlignment.Left
-    Btn.LayoutOrder = order
     Btn.BorderSizePixel = 0
     Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
 
     local Sw = Instance.new("Frame", Btn)
-    Sw.Size = UDim2.new(0, 32, 0, 16)
-    Sw.Position = UDim2.new(1, -42, 0.5, -8)
-    Sw.BackgroundColor3 = default and Color3.fromRGB(255, 127, 80) or Color3.fromRGB(50, 50, 60)
-    Sw.BorderSizePixel = 0
+    Sw.Size = UDim2.new(0, 30, 0, 14)
+    Sw.Position = UDim2.new(1, -40, 0.5, -7)
+    Sw.BackgroundColor3 = default and Color3.fromRGB(255, 127, 80) or Color3.fromRGB(50, 50, 55)
     Instance.new("UICorner", Sw).CornerRadius = UDim.new(1, 0)
 
-    local state = default
+    local active = default
     Btn.MouseButton1Click:Connect(function()
-        state = not state
-        callback(state)
-        tween(Sw, {BackgroundColor3 = state and Color3.fromRGB(255, 127, 80) or Color3.fromRGB(50, 50, 60)})
+        active = not active
+        callback(active)
+        tween(Sw, {BackgroundColor3 = active and Color3.fromRGB(255, 127, 80) or Color3.fromRGB(50, 50, 55)})
     end)
 end
 
-local function createSlider(name, min, max, default, callback, order)
+local function createSlider(name, min, max, default, callback)
     local Frame = Instance.new("Frame", Scroll)
-    Frame.Size = UDim2.new(1, -26, 0, 50)
-    Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    Frame.LayoutOrder = order
+    Frame.Size = UDim2.new(1, -10, 0, 45)
+    Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
 
     local Label = Instance.new("TextLabel", Frame)
-    Label.Size = UDim2.new(1, -20, 0, 20)
+    Label.Size = UDim2.new(1, -10, 0, 20)
     Label.Position = UDim2.new(0, 10, 0, 5)
-    Label.Text = name .. " : " .. tostring(default)
-    Label.TextColor3 = Color3.fromRGB(240, 240, 245)
-    Label.Font = Enum.Font.GothamSemibold
+    Label.Text = name .. ": " .. default
+    Label.TextColor3 = Color3.fromRGB(180, 180, 180)
+    Label.Font = Enum.Font.GothamBold
     Label.TextSize = 10
     Label.BackgroundTransparency = 1
     Label.TextXAlignment = Enum.TextXAlignment.Left
 
     local SliderBg = Instance.new("Frame", Frame)
-    SliderBg.Size = UDim2.new(1, -20, 0, 6)
+    SliderBg.Size = UDim2.new(1, -20, 0, 4)
     SliderBg.Position = UDim2.new(0, 10, 0, 32)
-    SliderBg.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+    SliderBg.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
     Instance.new("UICorner", SliderBg).CornerRadius = UDim.new(1, 0)
 
     local Fill = Instance.new("Frame", SliderBg)
@@ -186,138 +181,120 @@ local function createSlider(name, min, max, default, callback, order)
     Fill.BackgroundColor3 = Color3.fromRGB(255, 127, 80)
     Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
 
-    local DragBtn = Instance.new("TextButton", SliderBg)
-    DragBtn.Size = UDim2.new(1, 0, 1, 20)
-    DragBtn.Position = UDim2.new(0, 0, 0.5, -10)
-    DragBtn.BackgroundTransparency = 1
-    DragBtn.Text = ""
+    local Drag = Instance.new("TextButton", SliderBg)
+    Drag.Size = UDim2.new(1, 0, 1, 15)
+    Drag.BackgroundTransparency = 1
+    Drag.Text = ""
 
-    local dragging = false
-    local function update(input)
-        local pos = math.clamp((input.Position.X - SliderBg.AbsolutePosition.X) / SliderBg.AbsoluteSize.X, 0, 1)
+    local function update()
+        local pos = math.clamp((UIS:GetMouseLocation().X - SliderBg.AbsolutePosition.X) / SliderBg.AbsoluteSize.X, 0, 1)
         local val = math.floor(min + ((max - min) * pos))
         Fill.Size = UDim2.new(pos, 0, 1, 0)
-        Label.Text = name .. " : " .. tostring(val)
+        Label.Text = name .. ": " .. val
         callback(val)
     end
 
-    DragBtn.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true end end)
+    local dragging = false
+    Drag.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true end end)
     UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
-    UIS.InputChanged:Connect(function(i) if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then update(i) end end)
+    RunService.RenderStepped:Connect(function() if dragging then update() end end)
 end
 
-createToggle("ESP Highlight", _G.ESP_ENABLED, function(s) _G.ESP_ENABLED = s end, 1)
-createToggle("HARDCORE AIMBOT", _G.AIM_ENABLED, function(s) _G.AIM_ENABLED = s end, 2)
-createToggle("Show Avatar Icon", _G.AVATAR_ENABLED, function(s) _G.AVATAR_ENABLED = s end, 3)
-createToggle("Auto เก็บเหรียญ", _G.AUTO_COIN, function(s) _G.AUTO_COIN = s end, 4)
-createSlider("ความเร็วเก็บเหรียญ", 16, 100, _G.SPEED, function(v) _G.SPEED = v end, 5)
-createToggle("⚡ วาร์ปรายชื่อ", false, function(s) 
-    TeleportFrame.Visible = s 
-    if s then updatePlayerList() end 
-end, 6)
+-- [ Initialization ] --
+createToggle("ESP Highlight", _G.ESP_ENABLED, function(v) _G.ESP_ENABLED = v end)
+createToggle("Aimbot Murder", _G.AIM_ENABLED, function(v) _G.AIM_ENABLED = v end)
+createToggle("Auto Collect Coins", _G.AUTO_COIN, function(v) _G.AUTO_COIN = v end)
+createSlider("Coin Speed", 16, 100, _G.SPEED, function(v) _G.SPEED = v end)
+createToggle("⚡ PRO Teleport List", false, function(v) 
+    TPFrame.Visible = v 
+    if v then updatePlayerList() end 
+end)
 
-local Exit = Instance.new("TextButton", Main)
-Exit.Size = UDim2.new(1, -30, 0, 28)
-Exit.Position = UDim2.new(0, 15, 1, -38)
-Exit.BackgroundColor3 = Color3.fromRGB(40, 20, 25)
-Exit.Text = "Uninject"
-Exit.TextColor3 = Color3.fromRGB(255, 60, 100)
-Exit.Font = Enum.Font.GothamBold
-Exit.TextSize = 11
-Exit.BorderSizePixel = 0
-Instance.new("UICorner", Exit).CornerRadius = UDim.new(0, 8)
-Exit.MouseButton1Click:Connect(function() RUNNING = false; gui:Destroy() end)
-
+-- [ Logic: Role Detection ] --
 local function getRole(p)
     if not p or not p.Character then return "Innocent" end
-    local char = p.Character; local backpack = p:FindFirstChild("Backpack")
-    local hasKnife = char:FindFirstChild("Knife") or char:FindFirstChild("Dagger") or (backpack and (backpack:FindFirstChild("Knife") or backpack:FindFirstChild("Dagger")))
-    local hasGun = char:FindFirstChild("Gun") or char:FindFirstChild("Revolver") or (backpack and (backpack:FindFirstChild("Gun") or backpack:FindFirstChild("Revolver")))
-    if hasKnife then return "Murderer" end
-    if hasGun then return "Sheriff" end
+    local backpack = p:FindFirstChild("Backpack")
+    local char = p.Character
+    local knife = char:FindFirstChild("Knife") or (backpack and backpack:FindFirstChild("Knife"))
+    local gun = char:FindFirstChild("Gun") or (backpack and backpack:FindFirstChild("Gun"))
+    if knife then return "Murderer" end
+    if gun then return "Sheriff" end
     return "Innocent"
 end
 
-local function getClosestCoin(hrp)
-    local closest, dist = nil, math.huge
-    for _, v in pairs(workspace:GetDescendants()) do
-        if v:IsA("BasePart") and (v.Name:find("Coin") or v:FindFirstChild("CoinVisual")) then
-            if v.Transparency < 1 then
+-- [ Logic: Auto Coin ] --
+local bv, bg
+RunService.Heartbeat:Connect(function()
+    if not RUNNING then return end
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    
+    if _G.AUTO_COIN and hrp then
+        if not bv then bv = Instance.new("BodyVelocity", hrp); bv.MaxForce = Vector3.new(1e6, 1e6, 1e6) end
+        if not bg then bg = Instance.new("BodyGyro", hrp); bg.MaxTorque = Vector3.new(1e6, 1e6, 1e6) end
+        
+        local targetCoin = nil
+        local dist = _G.DETECTION_RANGE
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") and (v.Name:find("Coin") or v:FindFirstChild("CoinVisual")) and v.Transparency < 1 then
                 local d = (hrp.Position - v.Position).Magnitude
-                if d < dist and d < _G.DETECTION_RANGE then dist = d; closest = v end
+                if d < dist then dist = d; targetCoin = v end
             end
         end
-    end
-    return closest
-end
-
-local bv, bg
-local function handleAutoCoin(myChar, myHrp)
-    if not _G.AUTO_COIN then
-        if bv then bv:Destroy(); bv = nil end
-        if bg then bg:Destroy(); bg = nil end
-        return
-    end
-    if not bv then bv = Instance.new("BodyVelocity", myHrp); bv.MaxForce = Vector3.new(1e6, 1e6, 1e6) end
-    if not bg then bg = Instance.new("BodyGyro", myHrp); bg.MaxTorque = Vector3.new(1e6, 1e6, 1e6); bg.P = 10000 end
-    
-    local coin = getClosestCoin(myHrp)
-    if coin then
-        local target = coin.Position + Vector3.new(0, _G.HEIGHT, 0)
-        bv.Velocity = (target - myHrp.Position).Unit * _G.SPEED
-        bg.CFrame = CFrame.new(myHrp.Position, coin.Position)
-        if (myHrp.Position - coin.Position).Magnitude < _G.COLLECT_DISTANCE then
-            firetouchinterest(myHrp, coin, 0); firetouchinterest(myHrp, coin, 1)
+        
+        if targetCoin then
+            bv.Velocity = (targetCoin.Position + Vector3.new(0, _G.HEIGHT, 0) - hrp.Position).Unit * _G.SPEED
+            bg.CFrame = CFrame.new(hrp.Position, targetCoin.Position)
+            if (hrp.Position - targetCoin.Position).Magnitude < _G.COLLECT_DISTANCE then
+                firetouchinterest(hrp, targetCoin, 0); firetouchinterest(hrp, targetCoin, 1)
+            end
+        else
+            bv.Velocity = Vector3.zero
         end
     else
-        bv.Velocity = Vector3.zero
+        if bv then bv:Destroy() bv = nil end
+        if bg then bg:Destroy() bg = nil end
     end
-end
+end)
 
+-- [ Logic: ESP & Aimbot ] --
 RunService.RenderStepped:Connect(function()
     if not RUNNING then return end
-    local myChar = LocalPlayer.Character
-    local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
-    local targetMurd = nil
-    
+    local murdChar = nil
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character then
-            local char = p.Character
             local role = getRole(p)
-            local hl = char:FindFirstChild("SF_Visual")
-            
+            local hl = p.Character:FindFirstChild("Pro_HL")
             if _G.ESP_ENABLED then
-                if not hl then hl = Instance.new("Highlight", char); hl.Name = "SF_Visual" end
-                hl.FillColor = RoleColors[role]; hl.OutlineColor = RoleColors[role]
+                if not hl then 
+                    hl = Instance.new("Highlight", p.Character); hl.Name = "Pro_HL" 
+                    hl.OutlineTransparency = 0.2; hl.FillTransparency = 0.5
+                end
+                hl.FillColor = RoleColors[role]
+                hl.OutlineColor = RoleColors[role]
             elseif hl then hl:Destroy() end
-            
-            if role == "Murderer" then targetMurd = char end
+            if role == "Murderer" then murdChar = p.Character end
         end
     end
     
-    if _G.AIM_ENABLED and targetMurd and targetMurd:FindFirstChild("HumanoidRootPart") then
-        Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetMurd.HumanoidRootPart.Position)
+    if _G.AIM_ENABLED and murdChar and murdChar:FindFirstChild("HumanoidRootPart") then
+        Camera.CFrame = CFrame.new(Camera.CFrame.Position, murdChar.HumanoidRootPart.Position)
     end
-    
-    if myHrp then handleAutoCoin(myChar, myHrp) end
 end)
 
-local function makeDraggable(top, main)
-    local dragToggle, dragStart, startPos
-    top.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragToggle = true; dragStart = i.Position; startPos = main.Position end end)
-    UIS.InputChanged:Connect(function(i) if dragToggle and i.UserInputType == Enum.UserInputType.MouseMovement then local delta = i.Position - dragStart; main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
-    UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragToggle = false end end)
+-- [ Draggable Setup ] --
+local function makeDraggable(obj, header)
+    local dragging, input, startPos, startInput
+    header.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; startInput = i.Position; startPos = obj.Position end end)
+    UIS.InputChanged:Connect(function(i) if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then 
+        local delta = i.Position - startInput
+        obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end end)
+    UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
 end
 
-makeDraggable(TPHeader, TeleportFrame)
-makeDraggable(TopBar, Main)
-
-local isCol = false
-SideTab.MouseButton1Click:Connect(function()
-    isCol = not isCol
-    tween(Main, {Position = isCol and UDim2.new(0, -225, Main.Position.Y.Scale, Main.Position.Y.Offset) or UDim2.new(0, 15, Main.Position.Y.Scale, Main.Position.Y.Offset)})
-    tween(SideTab, {Rotation = isCol and 180 or 0})
-end)
+makeDraggable(Main, TopBar)
+makeDraggable(TPFrame, TPHeader)
 
 Players.PlayerAdded:Connect(updatePlayerList)
 Players.PlayerRemoving:Connect(updatePlayerList)
