@@ -1,5 +1,5 @@
 local Players = game:GetService("Players")
-ocal RunService = game:GetService("RunService")
+local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
@@ -197,7 +197,6 @@ local function createColorSelector(roleName, order)
     Indicator.BackgroundColor3 = RoleColors[roleName]
     Indicator.BorderSizePixel = 0
     Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
-
     local Colors = {Color3.fromRGB(255,0,0), Color3.fromRGB(0,200,255), Color3.fromRGB(0,255,0), Color3.fromRGB(255,255,0), Color3.fromRGB(255,0,255)}
     for i, color in pairs(Colors) do
         local cBtn = Instance.new("TextButton", Frame)
